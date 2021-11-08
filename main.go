@@ -89,7 +89,16 @@ func addBaseSBoM(image, filepath, ext string) error {
 	if err != nil {
 		return err
 	}
-	return remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err := remote.Write(ref, img, remote.WithAuthFromKeychain(authn.DefaultKeychain)); err != nil {
+		return err
+	}
+	newDigest, err := img.Digest()
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Old digest: %s\n", digest)
+	fmt.Printf("New digest: %s\n", newDigest)
+	return nil
 }
 
 func createLayer(fromPath, toPath string) (v1.Layer, error) {
