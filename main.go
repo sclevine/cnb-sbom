@@ -28,12 +28,12 @@ const (
 
 func main() {
 	if len(os.Args) < 2 || os.Args[1] == "-h" {
-		log.Fatalf("Usage: %s [ attach | get ]", os.Args[0])
+		log.Fatalf(`Usage: %s [ "attach-base" | "get" ] ...`, os.Args[0])
 	}
 	switch os.Args[1] {
-	case "attach":
+	case "attach-base":
 		if len(os.Args) != 5 {
-			log.Fatalf("Usage: %s attach [image] [path] [ext]", os.Args[0])
+			log.Fatalf("Usage: %s attach-base [image] [path] [ext]", os.Args[0])
 		}
 		if err := addBaseSBoM(os.Args[2], os.Args[3], os.Args[4]); err != nil {
 			log.Fatalf("Error: %s", err)
@@ -126,7 +126,7 @@ func tarFile(r io.ReadCloser, name string, size int64) io.ReadCloser {
 		header := &tar.Header{
 			Name: name,
 			Size: size,
-			Mode: 0644,
+			Mode: 0600,
 		}
 
 		if err := tw.WriteHeader(header); err != nil {
@@ -210,7 +210,8 @@ func untarSBOMs(r io.Reader, toDir, fromDir, prefix string) error {
 		if err != nil {
 			return err
 		}
-		if !strings.HasPrefix(header.Name, fromDir) {
+		if header.Typeflag != tar.TypeReg ||
+			!strings.HasPrefix(header.Name, fromDir) {
 			continue
 		}
 		s := strings.TrimPrefix(strings.TrimPrefix(header.Name, fromDir), "/")
