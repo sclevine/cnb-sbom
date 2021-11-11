@@ -167,11 +167,17 @@ func getSBoM(image, dir string) error {
 				SBOM struct {
 					SHA string
 				}
+				BOM struct {
+					SHA string
+				}
 			}
 			if err := json.Unmarshal([]byte(cf.Config.Labels[metadataLabel]), &md); err != nil {
 				return err
 			}
-			appDiffID = md.SBOM.SHA
+			if appDiffID = md.SBOM.SHA; appDiffID == "" {
+				appDiffID = md.BOM.SHA
+			}
+			
 		}
 	}
 	if err := extractLayer(img, baseDiffID, dir, "/cnb/sbom", "base"); err != nil {
